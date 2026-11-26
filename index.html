@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Study Planner</title>
+  <meta name="description" content="Atur jadwal kuliah, tugas, tenggat, dan sesi fokus." />
+  <meta name="theme-color" content="#fcebd5" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1f2238" media="(prefers-color-scheme: dark)" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Study Planner" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Sticker sprite (original simple shapes) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="s-heart" viewBox="0 0 100 100">
+        <path d="M50 88C20 66 6 50 6 32 6 18 17 8 30 8c9 0 16 5 20 12 4-7 11-12 20-12 13 0 24 10 24 24 0 18-14 34-44 56Z" fill="#F07A6A" stroke="#C9584A" stroke-width="3" stroke-linejoin="round"/>
+        <ellipse cx="28" cy="27" rx="9" ry="5" fill="#fff" opacity=".55" transform="rotate(-25 28 27)"/>
+        <rect x="38" y="40" width="3.5" height="9" rx="1.7" fill="#5B3A24"/>
+        <rect x="58" y="40" width="3.5" height="9" rx="1.7" fill="#5B3A24"/>
+        <ellipse cx="32" cy="54" rx="7" ry="4.5" fill="#F9B4A8"/>
+        <ellipse cx="68" cy="54" rx="7" ry="4.5" fill="#F9B4A8"/>
+      </symbol>
+      <symbol id="s-star" viewBox="0 0 100 100">
+        <path d="M50 6l12 28 30 3-23 20 7 30-26-16-26 16 7-30L8 37l30-3Z" fill="#F5C451" stroke="#D29A2A" stroke-width="4" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="s-flower" viewBox="0 0 100 100">
+        <g fill="#F8C9C4" stroke="#E0948C" stroke-width="3">
+          <circle cx="50" cy="24" r="20"/><circle cx="75" cy="42" r="20"/><circle cx="66" cy="72" r="20"/>
+          <circle cx="34" cy="72" r="20"/><circle cx="25" cy="42" r="20"/>
+        </g>
+        <circle cx="50" cy="50" r="14" fill="#F7DC8C" stroke="#DDB45A" stroke-width="3"/>
+      </symbol>
+      <symbol id="s-moon" viewBox="0 0 100 100">
+        <path d="M64 10a40 40 0 1 0 26 66A34 34 0 0 1 64 10Z" fill="#F5C451" stroke="#D29A2A" stroke-width="4" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="s-spark" viewBox="0 0 100 100">
+        <path d="M50 4c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46Z" fill="#9FB4E8"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="page">
+    <svg class="deco d-star" aria-hidden="true"><use href="#s-star"/></svg>
+    <svg class="deco d-flower" aria-hidden="true"><use href="#s-flower"/></svg>
+    <svg class="deco d-spark1" aria-hidden="true"><use href="#s-spark"/></svg>
+    <svg class="deco d-moon" aria-hidden="true"><use href="#s-moon"/></svg>
+
+    <header class="topbar">
+      <div class="tape">✿ study planner ✿</div>
+      <div class="top-right">
+        <span id="clock" class="clock"></span>
+        <button class="round-btn" id="open-settings" aria-label="Pengaturan" title="Pengaturan">⚙</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-text">
+        <p class="hand" id="greeting">Halo!</p>
+        <h1>Catat, atur,<br /><span class="hl">raih mimpimu</span></h1>
+        <p class="lead" id="today"></p>
+      </div>
+
+      <section class="countdown sticker" id="countdown" aria-live="polite">
+        <svg class="cd-heart" aria-hidden="true"><use href="#s-heart"/></svg>
+        <div class="cd-label" id="cd-label">Tenggat terdekat</div>
+        <div class="cd-title" id="cd-title">Belum ada tugas atau ujian</div>
+        <div class="cd-meta" id="cd-meta">Tambahkan tugas/ujian untuk memulai hitung mundur.</div>
+        <div class="cd-grid" id="cd-grid" hidden>
+          <div><span id="cd-d">0</span><small>hari</small></div>
+          <div><span id="cd-h">0</span><small>jam</small></div>
+          <div><span id="cd-m">0</span><small>menit</small></div>
+          <div><span id="cd-s">0</span><small>detik</small></div>
+        </div>
+      </section>
+    </section>
+
+    <nav class="tabs" role="tablist">
+      <button role="tab" class="tab active" data-tab="home" aria-selected="true"><span class="ti" aria-hidden="true">🏠</span><span class="tl">Beranda</span></button>
+      <button role="tab" class="tab" data-tab="tasks" aria-selected="false"><span class="ti" aria-hidden="true">📝</span><span class="tl">Tugas</span><span class="badge" id="pending-count">0</span></button>
+      <button role="tab" class="tab" data-tab="schedule" aria-selected="false"><span class="ti" aria-hidden="true">🎒</span><span class="tl">Jadwal</span></button>
+      <button role="tab" class="tab" data-tab="calendar" aria-selected="false"><span class="ti" aria-hidden="true">📅</span><span class="tl">Kalender</span></button>
+      <button role="tab" class="tab" data-tab="focus" aria-selected="false"><span class="ti" aria-hidden="true">⏰</span><span class="tl">Fokus</span></button>
+    </nav>
+
+    <button class="fab" id="fab" aria-label="Tambah tugas" title="Tambah">+</button>
+
+    <!-- Beranda -->
+    <section class="panel" id="panel-home">
+      <div class="stats">
+        <div class="stat sticker sage">
+          <small>Tugas selesai</small>
+          <b id="st-done">0/0</b>
+          <div class="bar"><i id="st-bar"></i></div>
+        </div>
+        <div class="stat sticker pink"><small>Fokus hari ini</small><b id="st-focus">0 mnt</b></div>
+        <div class="stat sticker blue"><small>Kelas hari ini</small><b id="st-classes">0</b></div>
+        <div class="stat sticker butter"><small>Terlambat</small><b id="st-overdue">0</b></div>
+      </div>
+      <div class="two-col">
+        <div class="paper sticker">
+          <h3 class="paper-title">🎒 Kelas hari ini</h3>
+          <ul class="list" id="home-classes"></ul>
+        </div>
+        <div class="paper sticker">
+          <h3 class="paper-title">⭐ Segera dikerjakan</h3>
+          <ul class="list" id="home-tasks"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tugas -->
+    <section class="panel" id="panel-tasks" hidden>
+      <div class="panel-head">
+        <div class="filters" id="task-filters">
+          <button class="chip active" data-filter="pending">Belum selesai</button>
+          <button class="chip" data-filter="done">Selesai</button>
+          <button class="chip" data-filter="all">Semua</button>
+        </div>
+        <button class="btn primary" id="add-task">+ Tambah Tugas</button>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="task-search" placeholder="🔍 Cari tugas / mata pelajaran…" aria-label="Cari tugas" />
+        <select id="task-priority" aria-label="Filter prioritas">
+          <option value="all">Semua prioritas</option>
+          <option value="tinggi">Prioritas tinggi</option>
+          <option value="sedang">Prioritas sedang</option>
+          <option value="rendah">Prioritas rendah</option>
+        </select>
+      </div>
+      <ul class="list" id="task-list"></ul>
+    </section>
+
+    <!-- Jadwal -->
+    <section class="panel" id="panel-schedule" hidden>
+      <div class="panel-head">
+        <p class="muted">Jadwal mingguan, hari ini disorot.</p>
+        <button class="btn primary" id="add-schedule">+ Tambah Jadwal</button>
+      </div>
+      <div id="schedule-list"></div>
+    </section>
+
+    <!-- Kalender -->
+    <section class="panel" id="panel-calendar" hidden>
+      <div class="cal-wrap sticker">
+        <div class="cal-head">
+          <button class="round-btn" id="cal-prev" aria-label="Bulan sebelumnya">‹</button>
+          <h3 id="cal-title"></h3>
+          <button class="round-btn" id="cal-next" aria-label="Bulan berikutnya">›</button>
+          <button class="btn small" id="cal-today">Hari ini</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="paper sticker">
+        <div class="panel-head">
+          <h3 class="paper-title" id="cal-day-title"></h3>
+          <button class="btn small primary" id="cal-add">+ Tugas di tanggal ini</button>
+        </div>
+        <p class="muted cal-classes" id="cal-day-classes"></p>
+        <ul class="list" id="cal-day-list"></ul>
+      </div>
+    </section>
+
+    <!-- Fokus / Pomodoro -->
+    <section class="panel" id="panel-focus" hidden>
+      <div class="pomo sticker" id="pomo">
+        <div class="filters pomo-modes" id="pomo-modes">
+          <button class="chip active" data-mode="focus">Fokus</button>
+          <button class="chip" data-mode="short">Istirahat pendek</button>
+          <button class="chip" data-mode="long">Istirahat panjang</button>
+        </div>
+        <div class="ring">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="ring-track" cx="60" cy="60" r="54" />
+            <circle class="ring-prog" id="pomo-ring" cx="60" cy="60" r="54" />
+          </svg>
+          <div class="ring-text">
+            <span id="pomo-time">25:00</span>
+            <small id="pomo-label">waktunya fokus ✿</small>
+          </div>
+        </div>
+        <div class="pomo-actions">
+          <button class="btn primary" id="pomo-start">Mulai</button>
+          <button class="btn" id="pomo-reset">Ulang</button>
+          <button class="btn" id="pomo-skip">Lewati</button>
+        </div>
+        <label class="pomo-task">Sedang mengerjakan
+          <select id="pomo-task"><option value="">Pilih tugas (opsional)</option></select>
+        </label>
+        <p class="muted pomo-info">
+          Sesi fokus hari ini: <b id="pomo-count">0</b> · Total minggu ini: <b id="pomo-week">0 mnt</b><br />
+          Setiap 4 sesi fokus, kamu dapat istirahat panjang.
+        </p>
+      </div>
+    </section>
+
+    <footer class="foot hand">dibuat dengan <svg class="foot-heart" aria-hidden="true"><use href="#s-heart"/></svg> untuk belajar yang lebih teratur</footer>
+  </div>
+
+  <!-- Task dialog -->
+  <dialog id="task-dialog">
+    <form method="dialog" id="task-form">
+      <h2 id="task-dialog-title">Tambah Tugas</h2>
+      <input type="hidden" name="id" />
+      <label>Judul
+        <input name="title" required maxlength="120" placeholder="mis. Laporan Praktikum 3" />
+      </label>
+      <div class="row">
+        <label>Jenis
+          <select name="type">
+            <option value="tugas">Tugas</option>
+            <option value="proyek">Proyek</option>
+            <option value="ujian">Ujian</option>
+          </select>
+        </label>
+        <label>Prioritas
+          <select name="priority">
+            <option value="tinggi">Tinggi</option>
+            <option value="sedang" selected>Sedang</option>
+            <option value="rendah">Rendah</option>
+          </select>
+        </label>
+      </div>
+      <label>Mata Pelajaran
+        <input name="subject" list="subject-options" maxlength="80" placeholder="opsional" />
+      </label>
+      <label>Tenggat / Waktu Ujian
+        <input type="datetime-local" name="deadline" required />
+      </label>
+      <label>Catatan
+        <textarea name="notes" rows="3" maxlength="500" placeholder="opsional"></textarea>
+      </label>
+      <div class="actions">
+        <button type="button" class="btn" data-close>Batal</button>
+        <button type="submit" class="btn primary">Simpan</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Schedule dialog -->
+  <dialog id="schedule-dialog">
+    <form method="dialog" id="schedule-form">
+      <h2 id="schedule-dialog-title">Tambah Jadwal</h2>
+      <input type="hidden" name="id" />
+      <label>Mata Pelajaran
+        <input name="subject" required maxlength="80" placeholder="mis. Algoritma &amp; Pemrograman" />
+      </label>
+      <div class="row">
+        <label>Hari
+          <select name="day" required>
+            <option value="1">Senin</option>
+            <option value="2">Selasa</option>
+            <option value="3">Rabu</option>
+            <option value="4">Kamis</option>
+            <option value="5">Jumat</option>
+            <option value="6">Sabtu</option>
+            <option value="0">Minggu</option>
+          </select>
+        </label>
+        <label>Mulai
+          <input type="time" name="start" required />
+        </label>
+        <label>Selesai
+          <input type="time" name="end" required />
+        </label>
+      </div>
+      <label>Ruangan / Link Kelas Online
+        <input name="room" maxlength="300" placeholder="mis. R. 301 atau https://meet.google.com/..." />
+      </label>
+      <label>Dosen Pengampu
+        <input name="lecturer" maxlength="80" placeholder="opsional" />
+      </label>
+      <p class="form-error" id="schedule-error" hidden></p>
+      <div class="actions">
+        <button type="button" class="btn" data-close>Batal</button>
+        <button type="submit" class="btn primary">Simpan</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Settings dialog -->
+  <dialog id="settings-dialog">
+    <form method="dialog" id="settings-form">
+      <h2>Pengaturan</h2>
+
+      <fieldset>
+        <legend>🔔 Pengingat</legend>
+        <label class="check">
+          <input type="checkbox" name="notify" />
+          <span>Ingatkan aku H-1 dan 1 jam sebelum tenggat</span>
+        </label>
+        <p class="hint">Pengingat muncul selama halaman ini terbuka di browser.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>⏰ Durasi Pomodoro (menit)</legend>
+        <div class="row">
+          <label>Fokus <input type="number" name="focus" min="1" max="180" required /></label>
+          <label>Istirahat pendek <input type="number" name="short" min="1" max="60" required /></label>
+          <label>Istirahat panjang <input type="number" name="long" min="1" max="90" required /></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>💾 Data</legend>
+        <div class="data-actions">
+          <button type="button" class="btn small" id="export-data">Ekspor cadangan</button>
+          <label class="btn small file-btn">Impor cadangan
+            <input type="file" id="import-data" accept="application/json,.json" hidden />
+          </label>
+          <button type="button" class="btn small danger" id="reset-data">Hapus semua data</button>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" class="btn" data-close>Batal</button>
+        <button type="submit" class="btn primary">Simpan</button>
+      </div>
+    </form>
+  </dialog>
+
+  <datalist id="subject-options"></datalist>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
